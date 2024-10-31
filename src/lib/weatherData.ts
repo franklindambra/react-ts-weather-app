@@ -34,6 +34,7 @@ interface Temp {
     rain?: number; // Optional as some days may not have rain data
   }
   
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   interface WeatherData {
     lat: number;
     lon: number;
@@ -41,6 +42,7 @@ interface Temp {
     timezone_offset: number;
     daily: Daily[];
   }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
 export const data = {
     "lat": 51.51,
