@@ -28,6 +28,7 @@ export default function Weather() {
   const [forecastData, setForecastData] = useState<WeatherDay[]>([]);
   const [locationName, setLocationName] = useState("");
   const [currentWeather, setCurrentWeather] = useState<WeatherDay | null>(null);
+  const [zipCode, setZipCode] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const getUserLocation = () => {
@@ -51,6 +52,36 @@ export default function Weather() {
     getUserLocation();
   }, []);
 
+  const handleFetchWeather = async () => {
+
+    setUserLocation(null);
+
+    if (!zipCode) {
+      console.error("Zip code is required");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?postalcode=${zipCode}&format=json&countrycodes=US`
+      );
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const latitude = parseFloat(data[0].lat);
+        const longitude = parseFloat(data[0].lon);
+
+        setUserLocation({ latitude, longitude });
+        fetchWeather(latitude, longitude);
+        fetchLocationName(latitude, longitude);
+      } else {
+        console.error("Location not found for the provided zip code");
+      }
+    } catch (error) {
+      console.error("Error fetching location by zip code:", error);
+    }
+  };
+
   const fetchLocationName = async (latitude: number, longitude: number) => {
     try {
       const response = await fetch(
@@ -59,7 +90,7 @@ export default function Weather() {
       if (!response.ok) throw new Error("Failed to fetch location name");
 
       const data = await response.json();
-      setLocationName(data.address?.city + " "  + data.address?.state || "Unknown Location");
+      setLocationName(data.address?.city + " " + data.address?.state || "Unknown Location");
     } catch (error) {
       console.error("Error fetching location name:", error);
     }
@@ -92,9 +123,7 @@ export default function Weather() {
         clouds: data.daily.cloudcover_mean[index + 1],
       }));
 
-      const truncatedData = dailyData.slice(0, -1);
-
-      setForecastData(truncatedData);
+      setForecastData(dailyData.slice(0, -1));
     } catch (error) {
       console.error("Error fetching weather data:", error);
     }
@@ -111,8 +140,24 @@ export default function Weather() {
 
   return (
     <div className="p-10 h-screen">
+      <div className="mb-5">
+        <p className="font-bold mb-2">Enter Zip Code</p>
+        <input
+          type="number"
+          onChange={(e) => setZipCode(Number(e.target.value))}
+          placeholder="Zip Code"
+          className="mr-2 p-2 border text-black"
+        />
+        <button
+          onClick={handleFetchWeather}
+          className="p-2 bg-blue-500 text-white rounded ml-2"
+        >
+          Fetch Weather
+        </button>
+      </div>
+
       <h2 className="text-2xl mb-4">{locationName}</h2>
-      
+
       <div>
         <p>Current Weather</p>
         <div style={{ fontSize: "40px" }}>
@@ -122,7 +167,7 @@ export default function Weather() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {forecastData.map((day) => (
           <div
             key={day.date}

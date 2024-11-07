@@ -12,8 +12,6 @@ const LoadingSpinner = () => (
 
 export default function Home() {
   return (
-    <Suspense fallback={<LoadingSpinner />}>
       <Weather />
-    </Suspense>
   );
 }
