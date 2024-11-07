@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Header from "../components/Header";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -26,9 +27,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-zinc-100`}
       > 
-        {children}
+      <Header></Header>
+      <div className="pt-40">
+      {children}
+      </div>
+        
       </body>
     </html>
   );

@@ -1,14 +1,19 @@
-import Day from "@/components/8-day";
+"use client";
+
+import React, {Suspense} from "react";
+import Weather from "@/components/Weather";
+
+// Spinner component
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center h-full">
+    <div className="animate-spin border-t-4 border-blue-500 border-solid w-16 h-16 rounded-full"></div>
+  </div>
+);
 
 export default function Home() {
-  
   return (
-    <div className="bg-white p-5 h-screen dark:bg-black dark:text-cyan-50">
-      <h1 className="text-lg mb-2"><b>Weather</b> by <b>Franklin J Dambra</b></h1>
-      <p className="mb-2 max-w-50%">This application uses a static data set modeled on the open-weather API. <a target="_blank" className="underline" href="https://github.com/franklindambra/react-ts-weather-app">View Source Code</a></p>
-      <p className="font-bold">Tech Stack</p>
-      <ul className="mb-5"><li>NextJs (React Framework)</li><li>TypeScript</li><li>Tailwind CSS</li></ul>
-      <Day></Day>
-    </div>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Weather />
+    </Suspense>
   );
 }
