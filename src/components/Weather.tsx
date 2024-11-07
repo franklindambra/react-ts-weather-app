@@ -59,7 +59,7 @@ export default function Weather() {
       if (!response.ok) throw new Error("Failed to fetch location name");
 
       const data = await response.json();
-      setLocationName(data.address?.city || "Unknown Location");
+      setLocationName(data.address?.city + " "  + data.address?.state || "Unknown Location");
     } catch (error) {
       console.error("Error fetching location name:", error);
     }
@@ -106,8 +106,14 @@ export default function Weather() {
 
   return (
     <div className="p-10 h-screen">
-      <h2 className="text-2xl mb-4">Location: {locationName}</h2>
-      <div>Current Weather</div>
+      <h2 className="text-2xl mb-4">{locationName}</h2>
+      <div><p>Current Weather</p>
+      <div style={{ fontSize: "40px" }}>
+              {WeatherUtils.getCloudIcon(currentWeather.clouds)}
+              <p>High: {WeatherUtils.celsiusToFahrenheit(currentWeather.tempMax)} °F</p>
+              <p>Low: {WeatherUtils.celsiusToFahrenheit(currentWeather.tempMin)} °F</p>
+            </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {forecastData.map((day) => (
           <div
