@@ -100,20 +100,28 @@ export default function Weather() {
     }
   };
 
-  if (!userLocation || !forecastData.length) {
-    return <div className="p-10 h-screen flex flex-col  items-center"><Spinner /><p className="mt-4">Finding your location...</p></div>;
+  if (!userLocation || !forecastData.length || !currentWeather) {
+    return (
+      <div className="p-10 h-screen flex flex-col items-center">
+        <Spinner />
+        <p className="mt-4">Finding your location...</p>
+      </div>
+    );
   }
 
   return (
     <div className="p-10 h-screen">
       <h2 className="text-2xl mb-4">{locationName}</h2>
-      <div><p>Current Weather</p>
-      <div style={{ fontSize: "40px" }}>
-              {WeatherUtils.getCloudIcon(currentWeather.clouds)}
-              <p>High: {WeatherUtils.celsiusToFahrenheit(currentWeather.tempMax)} °F</p>
-              <p>Low: {WeatherUtils.celsiusToFahrenheit(currentWeather.tempMin)} °F</p>
-            </div>
+      
+      <div>
+        <p>Current Weather</p>
+        <div style={{ fontSize: "40px" }}>
+          {WeatherUtils.getCloudIcon(currentWeather?.clouds)}
+          <p>High: {WeatherUtils.celsiusToFahrenheit(currentWeather?.tempMax ?? 0)} °F</p>
+          <p>Low: {WeatherUtils.celsiusToFahrenheit(currentWeather?.tempMin ?? 0)} °F</p>
+        </div>
       </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {forecastData.map((day) => (
           <div
