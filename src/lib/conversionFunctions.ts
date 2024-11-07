@@ -2,7 +2,7 @@ class WeatherUtils {
 
 
   static kelvinToFahrenheit(kelvin: number): number {
-      let calculatedNumber = (kelvin - 273.15) * (9 / 5) + 32;
+      const calculatedNumber = (kelvin - 273.15) * (9 / 5) + 32;
       return Math.trunc(calculatedNumber);
   }
 
