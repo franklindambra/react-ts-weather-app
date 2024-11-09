@@ -2,7 +2,7 @@
 
 import { useWeatherContext } from "../../context/context";
 import WeatherUtils from "@/lib/conversionFunctions";
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 // Spinner Component
 const Spinner = () => (
