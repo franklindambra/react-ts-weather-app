@@ -1,5 +1,6 @@
 "use client";
 
+import { useWeatherContext } from "../../context/context";
 import WeatherUtils from "@/lib/conversionFunctions";
 import React, { useState, useEffect } from "react";
 
@@ -11,159 +12,43 @@ const Spinner = () => (
 );
 
 export default function Weather() {
-  interface WeatherDay {
-    date: string;
-    tempMax: number;
-    tempMin: number;
-    precipitation: number;
-    clouds: number;
-  }
-
-  interface LatAndLong {
-    latitude: number;
-    longitude: number;
-  }
-
-  const [userLocation, setUserLocation] = useState<LatAndLong | null>(null);
-  const [forecastData, setForecastData] = useState<WeatherDay[]>([]);
-  const [locationName, setLocationName] = useState("");
-  const [currentWeather, setCurrentWeather] = useState<WeatherDay | null>(null);
-  const [zipCode, setZipCode] = useState<number | undefined>(undefined);
-
-  useEffect(() => {
-    const getUserLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            setUserLocation({ latitude, longitude });
-            fetchWeather(latitude, longitude);
-            fetchLocationName(latitude, longitude);
-          },
-          (error) => {
-            console.error("Error getting user location: ", error);
-          }
-        );
-      } else {
-        console.log("Geolocation is not supported by this browser");
-      }
-    };
-
-    getUserLocation();
-  }, []);
-
-  const handleFetchWeather = async () => {
-
-    setUserLocation(null);
-
-    if (!zipCode) {
-      console.error("Zip code is required");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?postalcode=${zipCode}&format=json&countrycodes=US`
-      );
-      const data = await response.json();
-
-      if (data && data.length > 0) {
-        const latitude = parseFloat(data[0].lat);
-        const longitude = parseFloat(data[0].lon);
-
-        setUserLocation({ latitude, longitude });
-        fetchWeather(latitude, longitude);
-        fetchLocationName(latitude, longitude);
-      } else {
-        console.error("Location not found for the provided zip code");
-      }
-    } catch (error) {
-      console.error("Error fetching location by zip code:", error);
-    }
-  };
-
-  const fetchLocationName = async (latitude: number, longitude: number) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`
-      );
-      if (!response.ok) throw new Error("Failed to fetch location name");
-
-      const data = await response.json();
-      setLocationName(data.address?.city + " " + data.address?.state || "Unknown Location");
-    } catch (error) {
-      console.error("Error fetching location name:", error);
-    }
-  };
-
-  const fetchWeather = async (latitude: number, longitude: number) => {
-    try {
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,cloudcover_mean&current_weather=true&timezone=auto`
-      );
-      if (!response.ok) throw new Error("Failed to fetch weather data");
-
-      const data = await response.json();
-
-      const currentWeather: WeatherDay = {
-        date: data.daily.time[0],
-        tempMax: data.daily.temperature_2m_max[0],
-        tempMin: data.daily.temperature_2m_min[0],
-        precipitation: data.daily.precipitation_sum[0],
-        clouds: data.daily.cloudcover_mean[0],
-      };
-
-      setCurrentWeather(currentWeather);
-
-      const dailyData = data.daily.time.map((date: string, index: number) => ({
-        date: data.daily.time[index + 1],
-        tempMax: data.daily.temperature_2m_max[index + 1],
-        tempMin: data.daily.temperature_2m_min[index + 1],
-        precipitation: data.daily.precipitation_sum[index + 1],
-        clouds: data.daily.cloudcover_mean[index + 1],
-      }));
-
-      setForecastData(dailyData.slice(0, -1));
-    } catch (error) {
-      console.error("Error fetching weather data:", error);
-    }
-  };
+  const {
+    userLocation,
+    currentWeather,
+    locationName,
+    forecastData,
+  } = useWeatherContext();
 
   if (!userLocation || !forecastData.length || !currentWeather) {
     return (
       <div className="p-10 h-screen flex flex-col items-center">
         <Spinner />
-        <p className="mt-4">Finding your location...</p>
+        <p className="mt-4">Getting weather...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-10 h-screen">
-      <div className="mb-5">
-        <p className="font-bold mb-2">Enter Zip Code</p>
-        <input
-          type="number"
-          onChange={(e) => setZipCode(Number(e.target.value))}
-          placeholder="Zip Code"
-          className="mr-2 p-2 border text-black"
-        />
-        <button
-          onClick={handleFetchWeather}
-          className="p-2 bg-blue-500 text-white rounded ml-2"
-        >
-          Fetch Weather
-        </button>
-      </div>
-
+    <div className="px-10 ">
+      
       <h2 className="text-2xl mb-4">{locationName}</h2>
-
-      <div>
-        <p>Current Weather</p>
+      <div className="flex flex-col p-5 border-2 border-slate-500 rounded-md dark:bg-slate-500 dark:border-slate-300 shadow-lg mb-4">
+        
+        <p className="font-bold">Current Weather</p>
+        <div>
         <div style={{ fontSize: "40px" }}>
-          {WeatherUtils.getCloudIcon(currentWeather?.clouds)}
-          <p>High: {WeatherUtils.celsiusToFahrenheit(currentWeather?.tempMax ?? 0)} °F</p>
-          <p>Low: {WeatherUtils.celsiusToFahrenheit(currentWeather?.tempMin ?? 0)} °F</p>
+              {WeatherUtils.getCloudIcon(currentWeather.clouds)}
+            </div>
+          <p>
+            High:{" "}
+            {WeatherUtils.celsiusToFahrenheit(currentWeather?.tempMax ?? 0)} °F
+          </p>
+          <p>
+            Low:{" "}
+            {WeatherUtils.celsiusToFahrenheit(currentWeather?.tempMin ?? 0)} °F
+          </p>
+          <p>Precipitation: {currentWeather.precipitation} inches</p>
+          <p>Cloud Cover: {currentWeather.clouds}%</p>
         </div>
       </div>
 
